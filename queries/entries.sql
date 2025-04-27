@@ -12,3 +12,10 @@ VALUES (
     ?, ?, ?, ?, ?, ?, ?
 );
 
+-- name: GetUnreadEntries :many
+SELECT feeds.title AS feed_title, entries.*
+FROM entries
+JOIN feeds
+    ON entries.feed_id = feeds.id
+WHERE read = 0
+ORDER BY published_at DESC;

@@ -5,9 +5,12 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"time"
 )
 
-var functions = template.FuncMap{}
+var functions = template.FuncMap{
+	"formatDate": formatDate,
+}
 
 func newTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
@@ -51,4 +54,9 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	if err != nil {
 		app.serverError(w, err)
 	}
+}
+
+func formatDate(dt string) string {
+	val, _ := time.Parse(time.RFC3339, dt)
+	return val.Format("Jan 02, 2006")
 }

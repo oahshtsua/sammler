@@ -47,3 +47,61 @@ func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) error 
 	)
 	return err
 }
+
+const getUnreadEntries = `-- name: GetUnreadEntries :many
+SELECT feeds.title AS feed_title, entries.id, entries.feed_id, entries.title, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
+FROM entries
+JOIN feeds
+    ON entries.feed_id = feeds.id
+WHERE read = 0
+ORDER BY published_at DESC
+`
+
+type GetUnreadEntriesRow struct {
+	FeedTitle   string
+	ID          int64
+	FeedID      int64
+	Title       string
+	Author      sql.NullString
+	Content     string
+	ExternalUrl string
+	PublishedAt string
+	Read        int64
+	Starred     int64
+	CreatedAt   string
+}
+
+func (q *Queries) GetUnreadEntries(ctx context.Context) ([]GetUnreadEntriesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUnreadEntries)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUnreadEntriesRow
+	for rows.Next() {
+		var i GetUnreadEntriesRow
+		if err := rows.Scan(
+			&i.FeedTitle,
+			&i.ID,
+			&i.FeedID,
+			&i.Title,
+			&i.Author,
+			&i.Content,
+			&i.ExternalUrl,
+			&i.PublishedAt,
+			&i.Read,
+			&i.Starred,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

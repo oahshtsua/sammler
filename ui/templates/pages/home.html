@@ -1,3 +1,14 @@
 {{ define "main" }}
-<p>Welcome to Sammler!</p>
+<div>
+  <div class="flex justify-between items-center mb-4 border-b pb-2">
+    <h2 class="text-xl font-normal">Unreads</h2>
+  </div>
+
+  <!-- Feed Entries List -->
+  <div id="entry-list" class="space-y-1">
+    {{ if .}} {{ range . }} {{ template "entry-item" .}} {{ end }} {{ else }}
+    <p>No unread entries</p>
+    {{ end }}
+  </div>
+</div>
 {{ end }}

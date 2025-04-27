@@ -23,7 +23,12 @@ func (app *application) health(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	app.render(w, http.StatusOK, "home.html", nil)
+	unreadEntries, err := app.queries.GetUnreadEntries(context.Background())
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	app.render(w, http.StatusOK, "home.html", unreadEntries)
 }
 
 func (app *application) getFeeds(w http.ResponseWriter, r *http.Request) {
