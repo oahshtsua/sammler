@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
 
+	"github.com/oahshtsua/sammler/internal/data"
 	"github.com/oahshtsua/sammler/internal/syndication"
 )
 
@@ -34,4 +38,45 @@ func extractFeedAndSiteURLs(details *syndication.Feed) (string, string) {
 		}
 	}
 	return feedURL, siteURL
+}
+
+func (app *application) refreshFeeds() error {
+	feeds, err := app.queries.GetFeeds(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, feed := range feeds {
+		newEntries, err := syndication.GetNewEntries(feed)
+		if err != nil {
+			app.logger.Error(fmt.Sprintf("Error refreshing feed: %s", feed.Title))
+			return err
+		}
+
+		now := time.Now().UTC().Format(time.RFC3339)
+		for _, entry := range newEntries {
+			err := app.queries.CreateEntry(context.Background(), data.CreateEntryParams{
+				FeedID:      feed.ID,
+				Title:       entry.Title,
+				Author:      sql.NullString{String: entry.Author.Name, Valid: entry.Author.Name != ""},
+				Content:     "",
+				ExternalUrl: entry.Link.Href,
+				PublishedAt: entry.Published,
+				CreatedAt:   now,
+			})
+
+			if err != nil {
+				return err
+			}
+
+		}
+		err = app.queries.UpdateFeedCheckedAt(context.Background(), data.UpdateFeedCheckedAtParams{
+			ID:        feed.ID,
+			CheckedAt: now,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

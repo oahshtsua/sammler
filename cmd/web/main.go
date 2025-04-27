@@ -70,11 +70,17 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
+	logger.Info("Refreshing feeds...")
+	err = app.refreshFeeds()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
 	logger.Info("Starting server", "port", *port)
 	err = srv.ListenAndServe()
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
-
 	}
 }

@@ -23,3 +23,8 @@ WHERE feeds.id = ?;
 DELETE
 FROM feeds
 WHERE id = ?;
+
+-- name: UpdateFeedCheckedAt :exec
+UPDATE feeds
+SET checked_at = ?
+WHERE id = ?;
