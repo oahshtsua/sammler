@@ -4,6 +4,23 @@
 
 package data
 
+import (
+	"database/sql"
+)
+
+type Entry struct {
+	ID          int64
+	FeedID      int64
+	Title       string
+	Author      sql.NullString
+	Content     string
+	ExternalUrl string
+	PublishedAt string
+	Read        int64
+	Starred     int64
+	CreatedAt   string
+}
+
 type Feed struct {
 	ID        int64
 	Title     string
