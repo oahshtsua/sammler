@@ -5,11 +5,13 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
 var functions = template.FuncMap{
 	"formatDate": formatDate,
+	"ytNoCookie": ytNoCookie,
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
@@ -59,4 +61,9 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 func formatDate(dt string) string {
 	val, _ := time.Parse(time.RFC3339, dt)
 	return val.Format("Jan 02, 2006")
+}
+
+func ytNoCookie(ytURL string) string {
+	_, videoID, _ := strings.Cut(ytURL, "watch?v=")
+	return fmt.Sprintf("https://www.youtube-nocookie.com/embed/%s", videoID)
 }

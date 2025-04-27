@@ -17,5 +17,7 @@ func (app *application) router() *http.ServeMux {
 	mux.HandleFunc("GET /feeds/{id}/", app.getFeed)
 	mux.HandleFunc("DELETE /feeds/{id}/", app.deleteFeed)
 
+	mux.HandleFunc("GET /entries/{id}/", app.getEntry)
+
 	return mux
 }

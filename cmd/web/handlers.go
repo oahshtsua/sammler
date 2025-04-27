@@ -150,3 +150,23 @@ func (app *application) deleteFeed(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("HX-Redirect", "/feeds/")
 	w.WriteHeader(http.StatusOK)
 }
+
+func (app *application) getEntry(w http.ResponseWriter, r *http.Request) {
+	entryID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || entryID < 1 {
+		app.notFound(w)
+		return
+	}
+
+	entry, err := app.queries.GetEntry(context.Background(), entryID)
+	if err != nil {
+		if strings.Contains(err.Error(), "sql: no rows in result set") {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	app.render(w, http.StatusOK, "entry.html", entry)
+}

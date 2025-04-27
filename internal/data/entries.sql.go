@@ -48,6 +48,47 @@ func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) error 
 	return err
 }
 
+const getEntry = `-- name: GetEntry :one
+SELECT feeds.title as feed_title, entries.id, entries.feed_id, entries.title, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
+FROM entries
+JOIN feeds
+    ON entries.feed_id = feeds.id
+WHERE entries.id = ?
+`
+
+type GetEntryRow struct {
+	FeedTitle   string
+	ID          int64
+	FeedID      int64
+	Title       string
+	Author      sql.NullString
+	Content     string
+	ExternalUrl string
+	PublishedAt string
+	Read        int64
+	Starred     int64
+	CreatedAt   string
+}
+
+func (q *Queries) GetEntry(ctx context.Context, id int64) (GetEntryRow, error) {
+	row := q.db.QueryRowContext(ctx, getEntry, id)
+	var i GetEntryRow
+	err := row.Scan(
+		&i.FeedTitle,
+		&i.ID,
+		&i.FeedID,
+		&i.Title,
+		&i.Author,
+		&i.Content,
+		&i.ExternalUrl,
+		&i.PublishedAt,
+		&i.Read,
+		&i.Starred,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getFeedEntries = `-- name: GetFeedEntries :many
 SELECT feeds.title as feed_title, entries.id, entries.feed_id, entries.title, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
 FROM entries

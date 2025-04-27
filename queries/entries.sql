@@ -28,3 +28,9 @@ JOIN feeds
 WHERE feed_id = ?
 ORDER BY published_at DESC;
 
+-- name: GetEntry :one
+SELECT feeds.title as feed_title, entries.*
+FROM entries
+JOIN feeds
+    ON entries.feed_id = feeds.id
+WHERE entries.id = ?;
