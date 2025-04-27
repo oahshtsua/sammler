@@ -3,3 +3,13 @@
 //   sqlc v1.29.0
 
 package data
+
+type Feed struct {
+	ID        int64
+	Title     string
+	FeedUrl   string
+	SiteUrl   string
+	Disabled  int64
+	CheckedAt string
+	UpdatedAt string
+}
