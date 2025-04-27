@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"html/template"
 	"log"
 	"log/slog"
 	"net/http"
@@ -16,8 +17,9 @@ import (
 )
 
 type application struct {
-	logger  *slog.Logger
-	queries *data.Queries
+	logger    *slog.Logger
+	queries   *data.Queries
+	templates map[string]*template.Template
 }
 
 func openDB(dsn string) (*sql.DB, error) {
@@ -50,9 +52,14 @@ func main() {
 	}
 	defer db.Close()
 
+	tmplCache, err := newTemplateCache()
+	if err != nil {
+		log.Fatal(err)
+	}
 	app := application{
-		logger:  logger,
-		queries: data.New(db),
+		logger:    logger,
+		queries:   data.New(db),
+		templates: tmplCache,
 	}
 
 	srv := &http.Server{

@@ -14,5 +14,5 @@ func (app *application) health(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Home"))
+	app.render(w, http.StatusOK, "home.html", nil)
 }
