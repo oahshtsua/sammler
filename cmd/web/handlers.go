@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -56,6 +57,9 @@ func (app *application) createFeed(w http.ResponseWriter, r *http.Request) {
 
 	feedURL, siteURL := extractFeedAndSiteURLs(feedDetails)
 	now := time.Now().UTC().Format(time.RFC3339)
+
+	// TODO: wrap feed and entries creation in a transaction
+
 	feed, err := app.queries.CreateFeed(context.Background(), data.CreateFeedParams{
 		Title:     feedDetails.Title,
 		FeedUrl:   feedURL,
@@ -73,7 +77,22 @@ func (app *application) createFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: save feed entires
+	// TODO: figure out a way to insert in bulk with sqlc
+	for _, entry := range feedDetails.Entries {
+		err := app.queries.CreateEntry(context.Background(), data.CreateEntryParams{
+			FeedID:      feed.ID,
+			Title:       entry.Title,
+			Author:      sql.NullString{String: entry.Author.Name, Valid: entry.Author.Name != ""},
+			Content:     "", // TODO: store the description later maybe
+			ExternalUrl: entry.Link.Href,
+			PublishedAt: entry.Published,
+			CreatedAt:   now,
+		})
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+	}
 
 	w.Header().Add("HX-Redirect", fmt.Sprintf("/feeds/%d/", feed.ID))
 	w.WriteHeader(http.StatusCreated)
