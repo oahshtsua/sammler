@@ -48,6 +48,64 @@ func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) error 
 	return err
 }
 
+const getFeedEntries = `-- name: GetFeedEntries :many
+SELECT feeds.title as feed_title, entries.id, entries.feed_id, entries.title, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
+FROM entries
+JOIN feeds
+    ON entries.feed_id = feeds.id
+WHERE feed_id = ?
+ORDER BY published_at DESC
+`
+
+type GetFeedEntriesRow struct {
+	FeedTitle   string
+	ID          int64
+	FeedID      int64
+	Title       string
+	Author      sql.NullString
+	Content     string
+	ExternalUrl string
+	PublishedAt string
+	Read        int64
+	Starred     int64
+	CreatedAt   string
+}
+
+func (q *Queries) GetFeedEntries(ctx context.Context, feedID int64) ([]GetFeedEntriesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getFeedEntries, feedID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFeedEntriesRow
+	for rows.Next() {
+		var i GetFeedEntriesRow
+		if err := rows.Scan(
+			&i.FeedTitle,
+			&i.ID,
+			&i.FeedID,
+			&i.Title,
+			&i.Author,
+			&i.Content,
+			&i.ExternalUrl,
+			&i.PublishedAt,
+			&i.Read,
+			&i.Starred,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUnreadEntries = `-- name: GetUnreadEntries :many
 SELECT feeds.title AS feed_title, entries.id, entries.feed_id, entries.title, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
 FROM entries

@@ -122,7 +122,16 @@ func (app *application) getFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.render(w, http.StatusOK, "feed.html", feed)
+	entries, err := app.queries.GetFeedEntries(context.Background(), feedID)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	app.render(w, http.StatusOK, "feed.html", map[string]any{
+		"feed":    feed,
+		"entries": entries,
+	})
 }
 
 func (app *application) deleteFeed(w http.ResponseWriter, r *http.Request) {
