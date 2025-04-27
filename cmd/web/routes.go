@@ -12,6 +12,10 @@ func (app *application) router() *http.ServeMux {
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
 	mux.HandleFunc("GET /", app.home)
+	mux.HandleFunc("GET /feeds/", app.getFeeds)
+	mux.HandleFunc("POST /feeds/", app.createFeed)
+	mux.HandleFunc("GET /feeds/{id}/", app.getFeed)
+	mux.HandleFunc("DELETE /feeds/{id}/", app.deleteFeed)
 
 	return mux
 }
