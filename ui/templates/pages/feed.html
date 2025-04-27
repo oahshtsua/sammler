@@ -4,6 +4,8 @@
     <h2 class="text-primary text-xl font-normal">{{.feed.Title}}</h2>
     <div class="flex space-x-4 text-sm">
       <button
+        hx-post="/feeds/{{.feed.ID}}/action/mark-read/"
+        hx-confirm="Are you sure you want to mark all the entries in this feed as read?"
         class="text-primary hover:underline bg-transparent border-none p-0 cursor-pointer font-normal"
       >
         Mark all read

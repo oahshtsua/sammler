@@ -35,7 +35,7 @@
     <span>{{formatDate .PublishedAt }}</span>
     <span class="text-gray-300">|</span>
     <button
-      hx-post="/entries/{{.ID}}/read/"
+      hx-post="/entries/{{.ID}}/action/mark-read/"
       hx-target="#entry-{{.ID}}"
       hx-swap="outerHTML"
       {{if

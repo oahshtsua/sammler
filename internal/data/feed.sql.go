@@ -119,6 +119,17 @@ func (q *Queries) GetFeeds(ctx context.Context) ([]Feed, error) {
 	return items, nil
 }
 
+const markFeedRead = `-- name: MarkFeedRead :exec
+UPDATE entries
+SET read = 1
+WHERE feed_id = ?
+`
+
+func (q *Queries) MarkFeedRead(ctx context.Context, feedID int64) error {
+	_, err := q.db.ExecContext(ctx, markFeedRead, feedID)
+	return err
+}
+
 const updateFeedCheckedAt = `-- name: UpdateFeedCheckedAt :exec
 UPDATE feeds
 SET checked_at = ?

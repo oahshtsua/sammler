@@ -34,3 +34,14 @@ FROM entries
 JOIN feeds
     ON entries.feed_id = feeds.id
 WHERE entries.id = ?;
+
+-- name: MarkEntriesRead :exec
+UPDATE entries
+SET read = 1
+WHERE read = 0;
+
+-- name: MarkEntryRead :exec
+UPDATE entries
+SET read = 1
+WHERE id = ?;
+

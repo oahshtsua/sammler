@@ -204,3 +204,25 @@ func (q *Queries) GetUnreadEntries(ctx context.Context) ([]GetUnreadEntriesRow, 
 	}
 	return items, nil
 }
+
+const markEntriesRead = `-- name: MarkEntriesRead :exec
+UPDATE entries
+SET read = 1
+WHERE read = 0
+`
+
+func (q *Queries) MarkEntriesRead(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, markEntriesRead)
+	return err
+}
+
+const markEntryRead = `-- name: MarkEntryRead :exec
+UPDATE entries
+SET read = 1
+WHERE id = ?
+`
+
+func (q *Queries) MarkEntryRead(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, markEntryRead, id)
+	return err
+}

@@ -2,6 +2,15 @@
 <div>
   <div class="flex justify-between items-center mb-4 border-b pb-2">
     <h2 class="text-xl font-normal">Unreads</h2>
+    <div class="flex space-x-4 text-sm">
+      <button
+        hx-post="/entries/action/mark-all-read/"
+        hx-confirm="Are you sure you want to mark all the entries in this feed as read?"
+        class="text-blue-500 hover:underline bg-transparent border-none p-0 cursor-pointer font-normal"
+      >
+        Mark all read
+      </button>
+    </div>
   </div>
 
   <!-- Feed Entries List -->

@@ -151,6 +151,23 @@ func (app *application) deleteFeed(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (app *application) markFeedRead(w http.ResponseWriter, r *http.Request) {
+	feedID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || feedID < 1 {
+		app.notFound(w)
+		return
+	}
+
+	err = app.queries.MarkFeedRead(context.Background(), feedID)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	w.Header().Add("HX-Redirect", fmt.Sprintf("/feeds/%d/", feedID))
+	w.WriteHeader(http.StatusOK)
+}
+
 func (app *application) getEntry(w http.ResponseWriter, r *http.Request) {
 	entryID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil || entryID < 1 {
@@ -169,4 +186,32 @@ func (app *application) getEntry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.render(w, http.StatusOK, "entry.html", entry)
+}
+
+func (app *application) markEntriesRead(w http.ResponseWriter, r *http.Request) {
+	err := app.queries.MarkEntriesRead(context.Background())
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	w.Header().Add("HX-Redirect", fmt.Sprintf("/"))
+	w.WriteHeader(http.StatusOK)
+}
+
+func (app *application) markEntryRead(w http.ResponseWriter, r *http.Request) {
+	entryID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || entryID < 1 {
+		app.notFound(w)
+		return
+	}
+
+	err = app.queries.MarkEntryRead(context.Background(), entryID)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	w.Header().Add("HX-Redirect", "/")
+	w.WriteHeader(http.StatusOK)
 }
