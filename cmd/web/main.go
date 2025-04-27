@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"html/template"
 	"log"
 	"log/slog"
 	"net/http"
@@ -14,12 +13,12 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/oahshtsua/sammler/internal/data"
+	"github.com/oahshtsua/sammler/internal/syndication"
 )
 
 type application struct {
-	logger    *slog.Logger
-	queries   *data.Queries
-	templates map[string]*template.Template
+	logger  *slog.Logger
+	queries *data.Queries
 }
 
 func openDB(dsn string) (*sql.DB, error) {
@@ -52,14 +51,9 @@ func main() {
 	}
 	defer db.Close()
 
-	tmplCache, err := newTemplateCache()
-	if err != nil {
-		log.Fatal(err)
-	}
 	app := application{
-		logger:    logger,
-		queries:   data.New(db),
-		templates: tmplCache,
+		logger:  logger,
+		queries: data.New(db),
 	}
 
 	srv := &http.Server{
@@ -68,6 +62,46 @@ func main() {
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
+	}
+
+	logger.Info("Refreshing feeds...")
+
+	feeds, err := app.queries.GetFeeds(context.Background())
+	if err != nil {
+		log.Fatal("Error refreshing feed:", err)
+	}
+
+	for _, feed := range feeds {
+		newEntries, err := syndication.GetNewEntries(feed)
+		if err != nil {
+			log.Printf("Error refreshing feed: %s", feed.Title)
+			log.Fatal(err)
+		}
+		now := time.Now().UTC().Format(time.RFC3339)
+		for _, entry := range newEntries {
+			_, err := app.queries.CreateEntry(context.Background(), data.CreateEntryParams{
+				FeedID:      feed.ID,
+				Title:       entry.Title,
+				Subtitle:    sql.NullString{String: entry.Subtitle, Valid: entry.Subtitle != ""},
+				Author:      sql.NullString{String: entry.Author.Name, Valid: entry.Author.Name != ""},
+				Content:     entry.Content,
+				ExternalUrl: entry.Link.Href,
+				PublishedAt: entry.Published,
+				CreatedAt:   now,
+			})
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+		}
+		err = app.queries.UpdateFeedCheckedAt(context.Background(), data.UpdateFeedCheckedAtParams{
+			ID:        feed.ID,
+			CheckedAt: now,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	logger.Info("Starting server", "port", *port)

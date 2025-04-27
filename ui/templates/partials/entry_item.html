@@ -4,7 +4,7 @@
   <div class="flex items-start justify-between">
     <a
       href="/entries/{{.ID}}/"
-      class="font-medium text-lg text-blue-500 hover:underline"
+      class="font-medium text-lg text-primary hover:underline"
       >{{.Title}}</a
     >
     <button
@@ -30,7 +30,7 @@
 
   <!-- Second row: Feed Title · Date · External Link -->
   <div class="text-sm text-gray-600 mt-1 flex items-center gap-3">
-    <a href="/feed/{{.FeedID}}/" class="hover:text-blue-500">{{.FeedTitle}}</a>
+    <a href="/feed/{{.FeedID}}/" class="hover:text-primary">{{.FeedTitle}}</a>
     <span class="text-gray-300">|</span>
     <span>{{formatDate .PublishedAt }}</span>
     <span class="text-gray-300">|</span>
@@ -44,7 +44,7 @@
       1}}class="text-gray-500 cursor-not-allowed flex items-center"
       disabled
       {{else}}
-      class="text-gray-600 hover:text-blue-500 flex items-center"
+      class="text-gray-600 hover:text-primary flex items-center"
       {{end}}
     >
       <svg
@@ -68,7 +68,7 @@
       href="{{.ExternalUrl}}"
       target="_blank"
       rel="noopener noreferrer"
-      class="flex items-center text-gray-600 hover:text-blue-500"
+      class="flex items-center text-gray-600 hover:text-primary"
       title="Open in new tab"
     >
       <span>External URL</span>

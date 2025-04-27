@@ -1,23 +1,49 @@
 {{ define "base" }}
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sammler</title>
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- HTMX -->
-    <script src="/static/htmx.min.js"></script>
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sammler</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-  <body class="bg-white text-gray-800">
-    {{ template "header" . }}
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-4 max-w-4xl">
-      {{ template "main" . }}
-    </main>
-  </body>
+  <!-- HTMX CDN -->
+  <script src="https://unpkg.com/htmx.org@2.0.4"
+    integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+    crossorigin="anonymous"></script>
+
+  <!-- IBM Plex Fonts CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'primary': '#3b82f6',
+            'primary-hover': '#2563eb',
+            'light-bg': '#f8fafc',
+          },
+          fontFamily: {
+            sans: ['"IBM Plex Sans"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-white text-gray-800 font-sans">
+  {{ template "header" . }}
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-4 max-w-4xl">
+    {{ template "main" . }}
+  </main>
+</body>
+
 </html>
 {{ end }}

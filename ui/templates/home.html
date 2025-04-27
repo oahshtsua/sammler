@@ -1,0 +1,21 @@
+{{ define "main" }}
+<div>
+  <div class="flex justify-between items-center mb-4 border-b pb-2">
+    <h2 class="text-xl font-normal">Unreads ({{ len .}})</h2>
+    <div class="flex space-x-4 text-sm">
+      <button
+        class="text-primary hover:underline bg-transparent border-none p-0 cursor-pointer font-normal"
+      >
+        Mark all read
+      </button>
+    </div>
+  </div>
+
+  <!-- Feed Entries List -->
+  <div id="entry-list" class="space-y-1">
+    {{ if .}} {{ range . }} {{ template "entry-item" .}} {{ end }} {{ else }}
+    <p>No unread entries</p>
+    {{ end }}
+  </div>
+</div>
+{{ end }}

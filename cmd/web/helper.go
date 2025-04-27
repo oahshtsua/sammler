@@ -2,11 +2,22 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"runtime/debug"
-
-	"github.com/oahshtsua/sammler/internal/syndication"
+	"strings"
+	"time"
 )
+
+func formatDate(dt string) string {
+	val, _ := time.Parse(time.RFC3339, dt)
+	return val.Format("Jan 02, 2006")
+}
+
+func ytNoCookie(ytURL string) string {
+	_, videoID, _ := strings.Cut(ytURL, "watch?v=")
+	return fmt.Sprintf("https://www.youtube-nocookie.com/embed/%s", videoID)
+}
 
 func (app *application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
@@ -23,15 +34,16 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-func extractFeedAndSiteURLs(details *syndication.Feed) (string, string) {
-	var feedURL, siteURL string
-	for _, link := range details.Links {
-		switch link.Rel {
-		case "self":
-			feedURL = link.Href
-		default:
-			siteURL = link.Href
-		}
+func (app *application) renderPartial(w http.ResponseWriter, name string, data any) {
+	ts, err := template.ParseGlob("./ui/templates/partials/*.html")
+	if err != nil {
+		app.serverError(w, err)
+		return
 	}
-	return feedURL, siteURL
+	err = ts.ExecuteTemplate(w, name, data)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
 }

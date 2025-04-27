@@ -6,31 +6,28 @@ import (
 	"golang.org/x/net/html"
 )
 
-func extractFeedLink(n *html.Node) *string {
+func extractFeedLinks(n *html.Node, feeds *[]string) {
 	if n.Type == html.ElementNode && n.Data == "link" {
-		var feedType, feedURL string
+		var feedType, feedUrl string
 		for _, attr := range n.Attr {
 			switch attr.Key {
 			case "type":
 				feedType = attr.Val
 			case "href":
-				feedURL = attr.Val
+				feedUrl = attr.Val
 			}
 		}
 		if feedType == "application/rss+xml" || feedType == "application/atom+xml" {
-			return &feedURL
+			*feeds = append(*feeds, feedUrl)
 		}
 	}
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if res := extractFeedLink(c); res != nil {
-			return res
-		}
+		extractFeedLinks(c, feeds)
 	}
-	return nil
 }
 
-func discoverFeedURL(url string) (*string, error) {
+func discoverFeedUrls(url string) ([]string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -42,5 +39,8 @@ func discoverFeedURL(url string) (*string, error) {
 		return nil, err
 	}
 
-	return extractFeedLink(doc), nil
+	var feeds []string
+	extractFeedLinks(doc, &feeds)
+
+	return feeds, nil
 }

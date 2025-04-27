@@ -10,10 +10,11 @@ import (
 	"database/sql"
 )
 
-const createEntry = `-- name: CreateEntry :exec
+const createEntry = `-- name: CreateEntry :one
 INSERT INTO entries (
     feed_id,
     title,
+    subtitle,
     author,
     content,
     external_url,
@@ -21,13 +22,15 @@ INSERT INTO entries (
     created_at
 )
 VALUES (
-    ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?
 )
+RETURNING id, feed_id, title, subtitle, author, content, external_url, published_at, read, starred, created_at
 `
 
 type CreateEntryParams struct {
 	FeedID      int64
 	Title       string
+	Subtitle    sql.NullString
 	Author      sql.NullString
 	Content     string
 	ExternalUrl string
@@ -35,21 +38,36 @@ type CreateEntryParams struct {
 	CreatedAt   string
 }
 
-func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) error {
-	_, err := q.db.ExecContext(ctx, createEntry,
+func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error) {
+	row := q.db.QueryRowContext(ctx, createEntry,
 		arg.FeedID,
 		arg.Title,
+		arg.Subtitle,
 		arg.Author,
 		arg.Content,
 		arg.ExternalUrl,
 		arg.PublishedAt,
 		arg.CreatedAt,
 	)
-	return err
+	var i Entry
+	err := row.Scan(
+		&i.ID,
+		&i.FeedID,
+		&i.Title,
+		&i.Subtitle,
+		&i.Author,
+		&i.Content,
+		&i.ExternalUrl,
+		&i.PublishedAt,
+		&i.Read,
+		&i.Starred,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const getEntry = `-- name: GetEntry :one
-SELECT feeds.title as feed_title, entries.id, entries.feed_id, entries.title, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
+SELECT feeds.Title as feed_title, entries.id, entries.feed_id, entries.title, entries.subtitle, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
 FROM entries
 JOIN feeds
     ON entries.feed_id = feeds.id
@@ -61,6 +79,7 @@ type GetEntryRow struct {
 	ID          int64
 	FeedID      int64
 	Title       string
+	Subtitle    sql.NullString
 	Author      sql.NullString
 	Content     string
 	ExternalUrl string
@@ -78,6 +97,7 @@ func (q *Queries) GetEntry(ctx context.Context, id int64) (GetEntryRow, error) {
 		&i.ID,
 		&i.FeedID,
 		&i.Title,
+		&i.Subtitle,
 		&i.Author,
 		&i.Content,
 		&i.ExternalUrl,
@@ -90,7 +110,7 @@ func (q *Queries) GetEntry(ctx context.Context, id int64) (GetEntryRow, error) {
 }
 
 const getFeedEntries = `-- name: GetFeedEntries :many
-SELECT feeds.title as feed_title, entries.id, entries.feed_id, entries.title, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
+SELECT feeds.title as feed_title, entries.id, entries.feed_id, entries.title, entries.subtitle, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
 FROM entries
 JOIN feeds
     ON entries.feed_id = feeds.id
@@ -103,6 +123,7 @@ type GetFeedEntriesRow struct {
 	ID          int64
 	FeedID      int64
 	Title       string
+	Subtitle    sql.NullString
 	Author      sql.NullString
 	Content     string
 	ExternalUrl string
@@ -126,6 +147,7 @@ func (q *Queries) GetFeedEntries(ctx context.Context, feedID int64) ([]GetFeedEn
 			&i.ID,
 			&i.FeedID,
 			&i.Title,
+			&i.Subtitle,
 			&i.Author,
 			&i.Content,
 			&i.ExternalUrl,
@@ -148,7 +170,7 @@ func (q *Queries) GetFeedEntries(ctx context.Context, feedID int64) ([]GetFeedEn
 }
 
 const getUnreadEntries = `-- name: GetUnreadEntries :many
-SELECT feeds.title AS feed_title, entries.id, entries.feed_id, entries.title, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
+SELECT feeds.title AS feed_title, entries.id, entries.feed_id, entries.title, entries.subtitle, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
 FROM entries
 JOIN feeds
     ON entries.feed_id = feeds.id
@@ -161,6 +183,7 @@ type GetUnreadEntriesRow struct {
 	ID          int64
 	FeedID      int64
 	Title       string
+	Subtitle    sql.NullString
 	Author      sql.NullString
 	Content     string
 	ExternalUrl string
@@ -184,6 +207,7 @@ func (q *Queries) GetUnreadEntries(ctx context.Context) ([]GetUnreadEntriesRow, 
 			&i.ID,
 			&i.FeedID,
 			&i.Title,
+			&i.Subtitle,
 			&i.Author,
 			&i.Content,
 			&i.ExternalUrl,
@@ -203,4 +227,20 @@ func (q *Queries) GetUnreadEntries(ctx context.Context) ([]GetUnreadEntriesRow, 
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateEntryReadStatus = `-- name: UpdateEntryReadStatus :exec
+UPDATE entries
+SET read = ?
+WHERE id = ?
+`
+
+type UpdateEntryReadStatusParams struct {
+	Read int64
+	ID   int64
+}
+
+func (q *Queries) UpdateEntryReadStatus(ctx context.Context, arg UpdateEntryReadStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateEntryReadStatus, arg.Read, arg.ID)
+	return err
 }

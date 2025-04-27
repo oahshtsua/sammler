@@ -1,13 +1,15 @@
-{{ define "feed-item" }}
+{{ define "feed-entry" }}
 <div id="feed-{{.ID}}" class="bg-neutral-50 p-3">
+  <!-- Desktop View (unchanged) -->
   <div class="hidden md:flex md:items-center md:justify-between">
     <div class="flex items-center">
-      <a
-        href="/feeds/{{.ID}}/"
-        class="font-medium text-blue-500 hover:underline"
+      <a href="/feeds/{{.ID}}/" class="font-medium text-primary hover:underline"
         >{{.Title}}</a
       >
+      <!-- <span class="ml-2 bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded">Web -->
+      <!--     Development</span> -->
     </div>
+    <span class="text-xs text-gray-500">69 / 69</span>
   </div>
   <div
     class="hidden md:flex md:items-center md:justify-between text-sm text-gray-600 mt-1"

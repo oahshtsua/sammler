@@ -12,6 +12,7 @@ type Entry struct {
 	ID          int64
 	FeedID      int64
 	Title       string
+	Subtitle    sql.NullString
 	Author      sql.NullString
 	Content     string
 	ExternalUrl string
@@ -24,6 +25,7 @@ type Entry struct {
 type Feed struct {
 	ID        int64
 	Title     string
+	Subtitle  sql.NullString
 	FeedUrl   string
 	SiteUrl   string
 	Disabled  int64
