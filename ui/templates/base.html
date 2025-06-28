@@ -1,0 +1,23 @@
+{{ define "base" }}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sammler</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTMX -->
+    <script src="/static/htmx.min.js"></script>
+  </head>
+
+  <body class="bg-white text-gray-800">
+    {{ template "header" . }}
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-4 max-w-4xl">
+      {{ template "main" . }}
+    </main>
+  </body>
+</html>
+{{ end }}
