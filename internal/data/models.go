@@ -6,6 +6,8 @@ package data
 
 import (
 	"database/sql"
+
+	"github.com/oahshtsua/sammler/internal/syndication"
 )
 
 type Entry struct {
@@ -24,9 +26,10 @@ type Entry struct {
 type Feed struct {
 	ID        int64
 	Title     string
+	Subtitle  sql.NullString
 	FeedUrl   string
 	SiteUrl   string
-	Type      string
+	Type      syndication.FeedType
 	Disabled  int64
 	CheckedAt string
 	UpdatedAt string

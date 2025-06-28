@@ -1,0 +1,36 @@
+{{ define "main" }}
+<div>
+  <div class="flex justify-between items-center mb-4 border-b pb-2">
+    <h2 class="text-primary text-xl font-normal">{{.feed.Title}}</h2>
+    <div class="flex space-x-4 text-sm">
+      <button
+        hx-post="/feeds/{{.feed.ID}}/action/mark-read/"
+        hx-confirm="Are you sure you want to mark all the entries in this feed as read?"
+        class="text-primary hover:underline bg-transparent border-none p-0 cursor-pointer font-normal"
+      >
+        Mark all read
+      </button>
+      <button
+        class="text-primary hover:underline bg-transparent border-none p-0 cursor-pointer font-normal"
+      >
+        Refresh
+      </button>
+      <button
+        hx-delete="/feeds/{{.feed.ID}}/"
+        hx-confirm="Are you sure you want to delete this feed?"
+        class="text-primary hover:underline bg-transparent border-none p-0 cursor-pointer font-normal"
+      >
+        Remove
+      </button>
+    </div>
+  </div>
+
+  <!-- Feed Entries List -->
+  <div id="entry-list" class="space-y-1">
+    {{ if .entries }} {{ range .entries }} {{ template "entry-item" .}} {{end}}
+    {{ else }}
+    <p>No entries to show.</p>
+    {{ end }}
+  </div>
+</div>
+{{ end }}

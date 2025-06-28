@@ -3,6 +3,7 @@
 CREATE TABLE feeds (
     id         INTEGER PRIMARY KEY,
     title      TEXT NOT NULL,
+    subtitle   TEXT,
     feed_url   TEXT NOT NULL UNIQUE,
     site_url   TEXT NOT NULL,
     type       TEXT NOT NULL,

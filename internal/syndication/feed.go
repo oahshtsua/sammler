@@ -21,11 +21,12 @@ type FeedEntry struct {
 }
 
 type Feed struct {
-	Type    FeedType
-	Title   string
-	FeedURL string
-	SiteURL string
-	Entries []FeedEntry
+	Type     FeedType
+	Subtitle string
+	Title    string
+	FeedURL  string
+	SiteURL  string
+	Entries  []FeedEntry
 }
 
 type Link struct {

@@ -18,9 +18,10 @@ type RSSFeed struct {
 		Title         string         `xml:"title"`
 		Description   string         `xml:"description"`
 		LastBuildDate string         `xml:"lastBuildDate"`
-		Link          string         `xml:"link"`
-		AtomLink      Link           `xml:"http://www.w3.org/2005/Atom link"`
+		Link          []string       `xml:"link"`
 		Items         []RSSFeedEntry `xml:"item"`
+		// TODO: find a way to parse both <atom:link> and <link>
+		AtomLink string `xml:"atom:link"`
 	} `xml:"channel"`
 }
 
@@ -56,8 +57,8 @@ func (rf RSSFeed) toFeed() *Feed {
 	}
 	return &Feed{
 		Title:   rf.Channel.Title,
-		FeedURL: rf.Channel.AtomLink.Href,
-		SiteURL: rf.Channel.Link,
+		FeedURL: rf.Channel.AtomLink,
+		SiteURL: rf.Channel.Link[0],
 		Entries: entries,
 		Type:    RSS,
 	}

@@ -7,4 +7,6 @@ sql:
       go:
         package: "data"
         out: "internal/data"
-
+        overrides:
+          - column: "feeds.type"
+            go_type: "github.com/oahshtsua/sammler/internal/syndication.FeedType"

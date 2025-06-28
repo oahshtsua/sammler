@@ -25,12 +25,12 @@ func resolveFeedURL(url string) (string, error) {
 		return "", err
 	}
 	if source == nil {
-		return "", errors.New("No feed found for given URL")
+		return "", ErrFeedNotFound
 	}
 	return *source, nil
 }
 
-func parseFeed(data []byte) (*Feed, error) {
+func parseFeed(data []byte, feedURL string) (*Feed, error) {
 	feedType, err := detectFeedType(data)
 	if err != nil {
 		return nil, err
@@ -40,11 +40,19 @@ func parseFeed(data []byte) (*Feed, error) {
 	switch feedType {
 	case "rss":
 		f := RSSFeed{}
-		decoder.Decode(f)
+		err := decoder.Decode(&f)
+		if err != nil {
+			return nil, err
+		}
+		// HACK: manually assign the feed link to the Feed item
+		f.Channel.AtomLink = feedURL
 		return f.toFeed(), nil
 	case "feed":
 		f := AtomFeed{}
-		decoder.Decode(f)
+		err := decoder.Decode(&f)
+		if err != nil {
+			return nil, err
+		}
 		return f.toFeed(), nil
 	default:
 		return nil, ErrFeedNotSupported
@@ -69,6 +77,6 @@ func ExtractFeedDetails(url string) (*Feed, error) {
 		return nil, err
 	}
 
-	return parseFeed(body)
+	return parseFeed(body, source)
 
 }

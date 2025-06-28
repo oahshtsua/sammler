@@ -1,0 +1,38 @@
+{{ define "main" }}
+<div>
+  <div class="flex justify-between items-center mb-4 border-b pb-2">
+    <h2 class="text-xl font-normal">Feeds</h2>
+    <div class="flex space-x-4 text-sm">
+      <button
+        class="text-primary hover:underline bg-transparent border-none p-0 cursor-pointer font-normal"
+      >
+        Refresh all
+      </button>
+    </div>
+  </div>
+  <div class="mb-4">
+    <form hx-post="/feeds/" class="flex items-center space-x-2 mt-4">
+      <input
+        type="url"
+        name="feedUrl"
+        placeholder="Enter URL..."
+        class="flex-grow p-2 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+        required
+      />
+      <button
+        type="submit"
+        class="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-primary-dark"
+      >
+        Add Feed
+      </button>
+    </form>
+  </div>
+
+  <!-- Feed Sources List -->
+  <div id="feed-list" class="space-y-1">
+    {{ if . }} {{ range . }} {{ template "feed-item" . }} {{ end }} {{ else }}
+    <p>No feeds to show.</p>
+    {{ end }}
+  </div>
+</div>
+{{ end }}
