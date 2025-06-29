@@ -45,3 +45,7 @@ UPDATE entries
 SET read = 1
 WHERE id = ?;
 
+
+-- name: DeleteEntry :exec
+DELETE FROM entries
+WHERE id = ?;

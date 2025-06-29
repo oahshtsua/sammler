@@ -20,6 +20,7 @@ func (app *application) router() *http.ServeMux {
 	mux.HandleFunc("GET /feeds/{id}/action/refresh/", app.refreshFeed)
 
 	mux.HandleFunc("GET /entries/{id}/", app.getEntry)
+	mux.HandleFunc("DELETE /entries/{id}/", app.deleteEntry)
 	mux.HandleFunc("POST /entries/{id}/action/mark-read/", app.markEntryRead)
 	mux.HandleFunc("POST /entries/action/mark-all-read/", app.markEntriesRead)
 

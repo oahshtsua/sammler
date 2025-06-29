@@ -226,6 +226,21 @@ func (app *application) getEntry(w http.ResponseWriter, r *http.Request) {
 	app.render(w, http.StatusOK, "entry.html", map[string]any{"entry": entry, "content": htmlContent})
 }
 
+func (app *application) deleteEntry(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	err = app.queries.DeleteEntry(context.Background(), id)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 func (app *application) markEntriesRead(w http.ResponseWriter, r *http.Request) {
 	err := app.queries.MarkEntriesRead(context.Background())
 	if err != nil {

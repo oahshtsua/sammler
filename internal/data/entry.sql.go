@@ -48,6 +48,16 @@ func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) error 
 	return err
 }
 
+const deleteEntry = `-- name: DeleteEntry :exec
+DELETE FROM entries
+WHERE id = ?
+`
+
+func (q *Queries) DeleteEntry(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteEntry, id)
+	return err
+}
+
 const getEntry = `-- name: GetEntry :one
 SELECT feeds.title as feed_title, entries.id, entries.feed_id, entries.title, entries.author, entries.content, entries.external_url, entries.published_at, entries.read, entries.starred, entries.created_at
 FROM entries
