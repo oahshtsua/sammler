@@ -13,6 +13,21 @@ type RSSFeedEntry struct {
 	Link        string `xml:"link"`
 }
 
+func (rfe RSSFeedEntry) toFeedEntry() (*FeedEntry, error) {
+	published, err := parseRSSDate(rfe.Published)
+	if err != nil {
+		return nil, err
+	}
+
+	return &FeedEntry{
+		Title:     strings.TrimSpace(rfe.Title),
+		Published: published,
+		Link:      strings.TrimSpace(rfe.Link),
+		Content:   strings.TrimSpace(rfe.Description),
+	}, nil
+
+}
+
 type RSSFeed struct {
 	Channel struct {
 		Title         string         `xml:"title"`
@@ -42,18 +57,11 @@ func parseRSSDate(date string) (string, error) {
 func (rf RSSFeed) toFeed() *Feed {
 	var entries []FeedEntry
 	for _, entry := range rf.Channel.Items {
-		published, err := parseRSSDate(entry.Published)
+		fe, err := entry.toFeedEntry()
 		if err != nil {
-			// log the error
 			continue
 		}
-		entries = append(entries,
-			FeedEntry{
-				Title:     strings.TrimSpace(entry.Title),
-				Published: published,
-				Link:      strings.TrimSpace(entry.Link),
-				Content:   strings.TrimSpace(entry.Description),
-			})
+		entries = append(entries, *fe)
 	}
 	return &Feed{
 		Title:   rf.Channel.Title,

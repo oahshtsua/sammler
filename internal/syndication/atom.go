@@ -14,6 +14,18 @@ type AtomFeedEntry struct {
 	Content string `xml:"content"`
 }
 
+func (afe AtomFeedEntry) toFeedEntry() *FeedEntry {
+	return &FeedEntry{
+		Title:       strings.TrimSpace(afe.Title),
+		Description: strings.TrimSpace(afe.Subtitle),
+		Published:   afe.Published,
+		Updated:     afe.Updated,
+		Author:      strings.TrimSpace(afe.Author.Name),
+		Link:        afe.Link.Href,
+		Content:     strings.TrimSpace(afe.Content),
+	}
+}
+
 type AtomFeed struct {
 	Title   string          `xml:"title"`
 	Links   []Link          `xml:"link"`
@@ -34,16 +46,7 @@ func (af AtomFeed) toFeed() *Feed {
 	}
 	var entries []FeedEntry
 	for _, entry := range af.Entries {
-		entries = append(entries,
-			FeedEntry{
-				Title:       strings.TrimSpace(entry.Title),
-				Description: strings.TrimSpace(entry.Subtitle),
-				Published:   entry.Published,
-				Updated:     entry.Updated,
-				Author:      strings.TrimSpace(entry.Author.Name),
-				Link:        entry.Link.Href,
-				Content:     strings.TrimSpace(entry.Content),
-			})
+		entries = append(entries, *entry.toFeedEntry())
 	}
 	return &Feed{
 		Title:   af.Title,
