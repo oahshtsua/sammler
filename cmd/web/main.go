@@ -20,6 +20,7 @@ type application struct {
 	logger    *slog.Logger
 	queries   *data.Queries
 	templates map[string]*template.Template
+	workers   int
 }
 
 func openDB(dsn string) (*sql.DB, error) {
@@ -40,6 +41,7 @@ func openDB(dsn string) (*sql.DB, error) {
 func main() {
 	port := flag.Int("port", 3456, "Network port")
 	dsn := flag.String("dsn", "sammler.db", "Sqlite database file")
+	workers := flag.Int("workers", 10, "Number of workers to start for fetching feeds")
 
 	flag.Parse()
 
@@ -60,6 +62,7 @@ func main() {
 		logger:    logger,
 		queries:   data.New(db),
 		templates: tmplCache,
+		workers:   *workers,
 	}
 
 	srv := &http.Server{

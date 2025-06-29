@@ -27,18 +27,27 @@ func (app *application) refreshFeeds() error {
 	app.logger.Info("Starting feed refresh", "feed_count", len(feeds))
 
 	var wg sync.WaitGroup
-	resultChan := make(chan Result)
+	taskChan := make(chan data.Feed, len(feeds))
+	resultChan := make(chan Result, app.workers)
+
+	// Start the workers
+	for range app.workers {
+		wg.Add(1)
+		go worker(taskChan, resultChan, &wg)
+	}
+	// Add feeds to the task channel for processing
+	go func() {
+		defer close(taskChan)
+		for _, feed := range feeds {
+			taskChan <- feed
+		}
+	}()
 
 	// Close the channel when all goroutines are done
 	go func() {
 		wg.Wait()
 		close(resultChan)
 	}()
-
-	for _, feed := range feeds {
-		wg.Add(1)
-		go worker(feed, &wg, resultChan)
-	}
 
 	successCount := 0
 	errorCount := 0
@@ -86,13 +95,15 @@ func (app *application) refreshFeeds() error {
 	return nil
 }
 
-func worker(f data.Feed, wg *sync.WaitGroup, rc chan Result) {
+func worker(tc chan data.Feed, rc chan Result, wg *sync.WaitGroup) {
 	defer wg.Done()
-	entries, err := syndication.GetNewEntries(f.FeedUrl, f.Type, f.CheckedAt)
-	rc <- Result{
-		feedID:    f.ID,
-		feedTitle: f.Title,
-		entries:   entries,
-		err:       err,
+	for feed := range tc {
+		entries, err := syndication.GetNewEntries(feed.FeedUrl, feed.Type, feed.CheckedAt)
+		rc <- Result{
+			feedID:    feed.ID,
+			feedTitle: feed.Title,
+			entries:   entries,
+			err:       err,
+		}
 	}
 }
