@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -109,8 +108,8 @@ func (app *application) createFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getFeed(w http.ResponseWriter, r *http.Request) {
-	feedID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil || feedID < 1 {
+	feedID, err := parseID(r)
+	if err != nil {
 		app.notFound(w)
 		return
 	}
@@ -140,8 +139,8 @@ func (app *application) getFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteFeed(w http.ResponseWriter, r *http.Request) {
-	feedID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil || feedID < 1 {
+	feedID, err := parseID(r)
+	if err != nil {
 		app.notFound(w)
 		return
 	}
@@ -157,8 +156,8 @@ func (app *application) deleteFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) markFeedRead(w http.ResponseWriter, r *http.Request) {
-	feedID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil || feedID < 1 {
+	feedID, err := parseID(r)
+	if err != nil {
 		app.notFound(w)
 		return
 	}
@@ -174,8 +173,8 @@ func (app *application) markFeedRead(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) refreshFeed(w http.ResponseWriter, r *http.Request) {
-	feedID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil || feedID < 1 {
+	feedID, err := parseID(r)
+	if err != nil {
 		app.notFound(w)
 		return
 	}
@@ -237,8 +236,8 @@ func (app *application) refreshFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getEntry(w http.ResponseWriter, r *http.Request) {
-	entryID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil || entryID < 1 {
+	entryID, err := parseID(r)
+	if err != nil {
 		app.notFound(w)
 		return
 	}
@@ -270,8 +269,8 @@ func (app *application) markEntriesRead(w http.ResponseWriter, r *http.Request) 
 }
 
 func (app *application) markEntryRead(w http.ResponseWriter, r *http.Request) {
-	entryID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil || entryID < 1 {
+	entryID, err := parseID(r)
+	if err != nil {
 		app.notFound(w)
 		return
 	}
