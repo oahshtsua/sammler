@@ -24,10 +24,7 @@ func resolveFeedURL(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if source == nil {
-		return "", ErrFeedNotFound
-	}
-	return *source, nil
+	return source, nil
 }
 
 func parseFeed(data []byte, feedURL string) (*Feed, error) {

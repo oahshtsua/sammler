@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -35,18 +36,35 @@ func extractFeedLink(n *html.Node) *string {
 	return nil
 }
 
-func discoverFeedURL(url string) (*string, error) {
-	resp, err := http.Get(url)
+func discoverFeedURL(rawURL string) (string, error) {
+	resp, err := http.Get(rawURL)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return extractFeedLink(doc), nil
+	feedLink := extractFeedLink(doc)
+	if feedLink == nil {
+		return "", ErrFeedNotFound
+	}
+
+	feedURL, err := url.Parse(*feedLink)
+	if err != nil {
+		return "", err
+	}
+
+	if !feedURL.IsAbs() {
+		baseURL, err := url.Parse(rawURL)
+		if err != nil {
+			return "", err
+		}
+		feedURL = baseURL.ResolveReference(feedURL)
+	}
+	return feedURL.String(), nil
 }
 
 func isFeedURL(url string) (bool, error) {
