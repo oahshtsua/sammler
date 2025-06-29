@@ -204,6 +204,16 @@ func (app *application) refreshFeed(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (app *application) refreshAllFeeds(w http.ResponseWriter, r *http.Request) {
+	err := app.refreshFeeds()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Add("HX-Redirect", "/")
+	w.WriteHeader(http.StatusOK)
+}
+
 func (app *application) getEntry(w http.ResponseWriter, r *http.Request) {
 	entryID, err := parseID(r)
 	if err != nil {

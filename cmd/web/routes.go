@@ -14,6 +14,7 @@ func (app *application) router() *http.ServeMux {
 	mux.HandleFunc("GET /", app.home)
 	mux.HandleFunc("GET /feeds/", app.getFeeds)
 	mux.HandleFunc("POST /feeds/", app.createFeed)
+	mux.HandleFunc("GET /feeds/action/refresh-all/", app.refreshAllFeeds)
 	mux.HandleFunc("GET /feeds/{id}/", app.getFeed)
 	mux.HandleFunc("DELETE /feeds/{id}/", app.deleteFeed)
 	mux.HandleFunc("POST /feeds/{id}/action/mark-read/", app.markFeedRead)
