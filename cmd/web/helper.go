@@ -1,11 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
 	"runtime/debug"
 	"strconv"
+
+	"github.com/oahshtsua/sammler/internal/data"
+	"github.com/oahshtsua/sammler/internal/syndication"
 )
 
 func (app *application) serverError(w http.ResponseWriter, err error) {
@@ -29,4 +33,24 @@ func parseID(r *http.Request) (int64, error) {
 		return 0, errors.New("Invalid ID")
 	}
 	return id, nil
+}
+
+func buildCreateEntryParams(feedID int64, now string, entries []syndication.FeedEntry) []data.CreateEntryParams {
+	params := make([]data.CreateEntryParams, 0, len(entries))
+	for _, entry := range entries {
+		params = append(params, data.CreateEntryParams{
+			FeedID: feedID,
+			Title:  entry.Title,
+			Author: sql.NullString{
+				String: entry.Author,
+				Valid:  entry.Author != "",
+			},
+			Content:     entry.Content,
+			ExternalUrl: entry.Link,
+			PublishedAt: entry.Published,
+			CreatedAt:   now,
+		})
+
+	}
+	return params
 }

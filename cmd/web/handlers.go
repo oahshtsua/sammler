@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"html/template"
@@ -81,22 +80,7 @@ func (app *application) createFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entries := []data.CreateEntryParams{}
-	for _, entry := range feedDetails.Entries {
-		entries = append(entries, data.CreateEntryParams{
-			FeedID: feed.ID,
-			Title:  entry.Title,
-			Author: sql.NullString{
-				String: entry.Author,
-				Valid:  entry.Author != "",
-			},
-			Content:     entry.Content,
-			ExternalUrl: entry.Link,
-			PublishedAt: entry.Published,
-			CreatedAt:   now,
-		})
-
-	}
+	entries := buildCreateEntryParams(feed.ID, now, feedDetails.Entries)
 	err = app.queries.CreateMultipleEntry(context.Background(), entries)
 	if err != nil {
 		app.serverError(w, err)
@@ -198,23 +182,8 @@ func (app *application) refreshFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(newEntries) > 0 {
-		entries := []data.CreateEntryParams{}
 		now := time.Now().UTC().Format(time.RFC3339)
-		for _, entry := range newEntries {
-			entries = append(entries, data.CreateEntryParams{
-				FeedID: feed.ID,
-				Title:  entry.Title,
-				Author: sql.NullString{
-					String: entry.Author,
-					Valid:  entry.Author != "",
-				},
-				Content:     entry.Content,
-				ExternalUrl: entry.Link,
-				PublishedAt: entry.Published,
-				CreatedAt:   now,
-			})
-
-		}
+		entries := buildCreateEntryParams(feed.ID, now, newEntries)
 		err = app.queries.CreateMultipleEntry(context.Background(), entries)
 		if err != nil {
 			app.serverError(w, err)
