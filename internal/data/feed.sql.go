@@ -144,3 +144,19 @@ func (q *Queries) MarkFeedRead(ctx context.Context, feedID int64) error {
 	_, err := q.db.ExecContext(ctx, markFeedRead, feedID)
 	return err
 }
+
+const updateFeedCheckedAt = `-- name: UpdateFeedCheckedAt :exec
+UPDATE feeds
+SET checked_at = ?
+WHERE id = ?
+`
+
+type UpdateFeedCheckedAtParams struct {
+	CheckedAt string
+	ID        int64
+}
+
+func (q *Queries) UpdateFeedCheckedAt(ctx context.Context, arg UpdateFeedCheckedAtParams) error {
+	_, err := q.db.ExecContext(ctx, updateFeedCheckedAt, arg.CheckedAt, arg.ID)
+	return err
+}

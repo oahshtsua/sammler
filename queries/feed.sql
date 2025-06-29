@@ -31,3 +31,8 @@ UPDATE entries
 SET read = 1
 WHERE feed_id = ?;
 
+
+-- name: UpdateFeedCheckedAt :exec
+UPDATE feeds
+SET checked_at = ?
+WHERE id = ?;

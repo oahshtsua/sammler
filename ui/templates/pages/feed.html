@@ -11,6 +11,7 @@
         Mark all read
       </button>
       <button
+        hx-get="/feeds/{{.feed.ID}}/action/refresh/"
         class="text-primary hover:underline bg-transparent border-none p-0 cursor-pointer font-normal"
       >
         Refresh

@@ -173,6 +173,69 @@ func (app *application) markFeedRead(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (app *application) refreshFeed(w http.ResponseWriter, r *http.Request) {
+	feedID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || feedID < 1 {
+		app.notFound(w)
+		return
+	}
+
+	feed, err := app.queries.GetFeed(context.Background(), feedID)
+	if err != nil {
+		switch {
+		case err.Error() == "sql: no rows in result set":
+			app.notFound(w)
+		default:
+			app.serverError(w, err)
+
+		}
+		return
+	}
+
+	newEntries, err := syndication.GetNewEntries(feed.FeedUrl, feed.Type, feed.CheckedAt)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	if len(newEntries) > 0 {
+		entries := []data.CreateEntryParams{}
+		now := time.Now().UTC().Format(time.RFC3339)
+		for _, entry := range newEntries {
+			entries = append(entries, data.CreateEntryParams{
+				FeedID: feed.ID,
+				Title:  entry.Title,
+				Author: sql.NullString{
+					String: entry.Author,
+					Valid:  entry.Author != "",
+				},
+				Content:     entry.Content,
+				ExternalUrl: entry.Link,
+				PublishedAt: entry.Published,
+				CreatedAt:   now,
+			})
+
+		}
+		err = app.queries.CreateMultipleEntry(context.Background(), entries)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		err = app.queries.UpdateFeedCheckedAt(context.Background(), data.UpdateFeedCheckedAtParams{
+			ID:        feed.ID,
+			CheckedAt: now,
+		})
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+	}
+	w.Header().Add("HX-Redirect", fmt.Sprintf("/feeds/%d/", feedID))
+	w.WriteHeader(http.StatusOK)
+}
+
 func (app *application) getEntry(w http.ResponseWriter, r *http.Request) {
 	entryID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil || entryID < 1 {

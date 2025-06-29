@@ -40,7 +40,10 @@
         Mark all read
       </button>
       <span>•</span>
-      <button class="text-gray-600 hover:text-primary hover:underline">
+      <button
+        hx-get="/feeds/{{.ID}}/action/refresh/"
+        class="text-gray-600 hover:text-primary hover:underline"
+      >
         Refresh
       </button>
       <span>•</span>
